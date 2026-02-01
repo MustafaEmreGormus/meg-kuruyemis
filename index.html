@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEG KURUYEMİŞ | Taptaze Lezzetler</title>
+    <link rel="stylesheet" href="style.css">
+    
+   
+</head>
+<body>
+
+<header>
+    <img src="images/llogo.jpg" alt="resim bulunamadı">
+    <h1>MEG KURUYEMİŞ</h1>
+    <p>Doğadan Sofranıza En Taze Kuruyemişler</p>
+</header>
+
+<div class="container">
+    <h2>Ürünlerimiz</h2>
+    <div class="urun-listesi">
+        <div class="urun-karti">
+            <img src="images/fıstık.jpg" alt="Antep Fıstığı">
+            <h3>Antep Fıstığı</h3>
+            <p class="fiyat">450 TL / kg</p>
+            <p class="fiyat2">550 TL / kg</p>
+            <button onclick="sepeteEkle('Antep Fıstığı', 450)">Sepete Ekle</button>
+            <button onclick="sepettenCikar('Antep Fıstığı', 450)">Sepetten çıkar</button>
+        </div>
+
+        <div class="urun-karti">
+            <img src="images/badem.webp" alt="Çiğ Badem">
+            <h3>Badem</h3>
+            <p class="fiyat">380 TL / kg</p>
+            <p class="fiyat2">450 TL / kg</p>
+            <button onclick="sepeteEkle('Badem', 380)">Sepete Ekle</button>
+            <button onclick="sepettenCikar('Badem', 380)">sepetten çıkar</button>
+        </div>
+
+        <div class="urun-karti">
+            <img src="images/kavrulmus-findik.webp" alt="Kavrulmuş Fındık">
+            <h3>Fındık</h3>
+            <p class="fiyat">420 TL / kg</p>
+            <p class="fiyat2">500 TL / kg</p>
+            <button onclick="sepeteEkle('Fındık', 420)">Sepete Ekle</button>
+            <button onclick="sepettenCikar('Fındık', 420)">sepetten çıkar</button>
+        </div>
+    </div>
+
+    <div class="sepet-ozeti">
+        <h3>Alışveriş Sepetiniz</h3>
+        <ul id="sepet-listesi">
+            <li>Henüz ürün eklenmedi.</li>
+        </ul>
+        <p><strong>Toplam: <span id="toplam-fiyat">0</span> TL</strong></p>
+        <button onclick="siparisVer()">WhatsApp ile Sipariş Ver</button>
+    </div>
+</div>
+
+<script>
+    let sepet = [];
+    let toplam = 0;
+
+    function sepeteEkle(ad, fiyat) {
+        // Ürünü sepete ekle
+        sepet.push({ urunAdı: ad, urunFiyatı: fiyat });
+        toplam += fiyat;
+        guncelleSepetEkrani();
+    }
+
+    function sepettenCikar(ad, fiyat) {
+        // Sepette bu isimde bir ürün var mı kontrol et
+        const index = sepet.findIndex(item => item.urunAdı === ad);
+
+        if (index !== -1) {
+            // Eğer ürün bulunduysa sepetten çıkar ve fiyattan düş
+            toplam -= sepet[index].urunFiyatı;
+            sepet.splice(index, 1);
+            guncelleSepetEkrani();
+        } else {
+            alert("Bu ürün zaten sepetinizde yok!");
+        }
+    }
+
+    function guncelleSepetEkrani() {
+        const liste = document.getElementById('sepet-listesi');
+        const toplamEtiket = document.getElementById('toplam-fiyat');
+        
+        // Eğer HTML'de bu ID'ler yoksa hata vermemesi için kontrol:
+        if(!liste || !toplamEtiket) return;
+
+        liste.innerHTML = "";
+        
+        if (sepet.length === 0) {
+            liste.innerHTML = "<li>Henüz ürün eklenmedi.</li>";
+        } else {
+            sepet.forEach((item) => {
+                const li = document.createElement('li');
+                li.textContent = `${item.urunAdı} - ${item.urunFiyatı} TL`;
+                liste.appendChild(li);
+            });
+        }
+        
+        toplamEtiket.textContent = toplam;
+    }
+
+    function siparisVer() {
+        if(sepet.length === 0) {
+            alert("Sepetiniz boş!");
+            return;
+        }
+        const mesaj = "MEG KURUYEMİŞ Siparişim: " + sepet.map(i => i.urunAdı).join(", ") + ". Toplam: " + toplam + " TL";
+        window.open(`https://wa.me/905XXXXXXXXX?text=${encodeURIComponent(mesaj)}`);
+    }
+</script>
+
+</body>
+</html>
