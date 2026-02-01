@@ -5,114 +5,272 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEG KURUYEMİŞ | Taptaze Lezzetler</title>
     <link rel="stylesheet" href="style.css">
-    
-   
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; padding-bottom: 50px; }
+        header { text-align: center; padding: 20px; background: #fff; border-bottom: 3px solid #2d5a27; }
+        header img { width: 300px; height: auto; }
+        .container { width: 100%; max-width: 2100px; margin: auto; background-color: gold; overflow-x: auto; }
+        
+        /* Filtreleme Butonları */
+        .filtre-grubu { text-align: center; margin: 20px 0; }
+        .filtre-btn { 
+            padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 20px; 
+            border: 2px solid #2d5a27; background: blue; color: white; font-weight: bold;
+        }
+        .filtre-btn:hover, .btn-aktif { background: #2d5a27; color: white; }
+
+        /* Ürün Izgarası */
+        .urun-listesi { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .urun-karti { 
+            background: red; padding: 20px; border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; 
+        }
+        .urun-karti img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; }
+        
+        .gramaj-secici { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid gray; }
+        .fiyat { color: black; font-weight: bold; font-size: 1.4em; margin: 10px 0; }
+        .fiyat2 { text-decoration: line-through; color: black; font-size: 0.9em; }
+
+        .btn-ekle { background: #2d5a27; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 1s; }
+        .btn-cikar { background: #eee; color: #333; border: none; padding: 5px; margin-top: 10px; width: 100%; cursor: pointer; border-radius: 10px; transition: 1s; }
+        .btn-ekle:hover{
+            background-color: aqua;
+        }
+        .btn-cikar:hover{
+            background-color: fuchsia; color: white;
+        }
+        /* Sepet Bölümü */
+        .sepet-ozeti { background: #fff; padding: 20px; margin-top: 40px; border-radius: 10px; border-top: 5px solid #2d5a27; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #sepet-listesi { list-style: none; padding: 0; }
+        #sepet-listesi li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+
+        @media (max-width: 600px) { .urun-listesi { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
 <header>
-    <img src="images/llogo.jpg" alt="resim bulunamadı">
+    <img src="images/llogo.jpg" alt="MEG Logo">
     <h1>MEG KURUYEMİŞ</h1>
-    <p>Doğadan Sofranıza En Taze Kuruyemişler</p>
+    <p>Doğallığın ve Tazeliğin Adresi</p>
 </header>
 
 <div class="container">
-    <h2>Ürünlerimiz</h2>
+    <div class="filtre-grubu">
+        <button class="filtre-btn" onclick="filtrele('hepsi')">Hepsi</button>
+        <button class="filtre-btn" onclick="filtrele('kuruyemis')">Kuruyemiş</button>
+        <button class="filtre-btn" onclick="filtrele('sekerleme')">Şekerleme</button>
+    </div>
+
     <div class="urun-listesi">
-        <div class="urun-karti">
-            <img src="images/fıstık.jpg" alt="Antep Fıstığı">
+        <div class="urun-karti" data-kategori="sekerleme">
+            <img src="images/çikolata.jpg" alt="Çikolata">
+            <h3>Çikolata</h3>
+            <p class="fiyat2">600 TL / kg</p>
+            <select class="gramaj-secici" onchange="hesapla(this, 500)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>500</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Çikolata', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Çikolata')">Çıkar</button>
+        </div>
+
+        <div class="urun-karti" data-kategori="sekerleme">
+            <img src="images/lokum.jpg" alt="Lokum">
+            <h3>Lokum</h3>
+            <p class="fiyat2">350 TL / kg</p>
+            <select class="gramaj-secici" onchange="hesapla(this, 280)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>280</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Lokum', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Lokum')">Çıkar</button>
+        </div>
+
+        <div class="urun-karti" data-kategori="sekerleme">
+            <img src="images/draje.jpg" alt="Draje">
+            <h3>Çikolatalı Draje</h3>
+            <p class="fiyat2">480 TL / kg</p>
+            <select class="gramaj-secici" onchange="hesapla(this, 400)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>400</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Çikolatalı Draje', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Çikolatalı Draje')">Çıkar</button>
+        </div>
+
+        <div class="urun-karti" data-kategori="sekerleme">
+            <img src="images/pestil.jpg" alt="Pestil">
+            <h3>Pestil</h3>
+            <p class="fiyat2">400 TL / kg</p>
+            <select class="gramaj-secici" onchange="hesapla(this, 320)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>320</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Pestil', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Pestil')">Çıkar</button>
+        </div>
+
+        <div class="urun-karti" data-kategori="kuruyemis">
+            <img src="images/fıstık.jpg" alt="Fıstık">
             <h3>Antep Fıstığı</h3>
-            <p class="fiyat">450 TL / kg</p>
             <p class="fiyat2">550 TL / kg</p>
-            <button onclick="sepeteEkle('Antep Fıstığı', 450)">Sepete Ekle</button>
-            <button onclick="sepettenCikar('Antep Fıstığı', 450)">Sepetten çıkar</button>
+            <select class="gramaj-secici" onchange="hesapla(this, 450)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>450</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Antep Fıstığı', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Antep Fıstığı')">Çıkar</button>
         </div>
 
-        <div class="urun-karti">
-            <img src="images/badem.webp" alt="Çiğ Badem">
-            <h3>Badem</h3>
-            <p class="fiyat">380 TL / kg</p>
-            <p class="fiyat2">450 TL / kg</p>
-            <button onclick="sepeteEkle('Badem', 380)">Sepete Ekle</button>
-            <button onclick="sepettenCikar('Badem', 380)">sepetten çıkar</button>
-        </div>
-
-        <div class="urun-karti">
-            <img src="images/kavrulmus-findik.webp" alt="Kavrulmuş Fındık">
+        <div class="urun-karti" data-kategori="kuruyemis">
+            <img src="images/kavrulmus-findik.webp" alt="Fındık">
             <h3>Fındık</h3>
-            <p class="fiyat">420 TL / kg</p>
             <p class="fiyat2">500 TL / kg</p>
-            <button onclick="sepeteEkle('Fındık', 420)">Sepete Ekle</button>
-            <button onclick="sepettenCikar('Fındık', 420)">sepetten çıkar</button>
+            <select class="gramaj-secici" onchange="hesapla(this, 420)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>420</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Fındık', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Fındık')">Çıkar</button>
+        </div>
+
+        <div class="urun-karti" data-kategori="kuruyemis">
+            <img src="images/badem.webp" alt="Badem">
+            <h3>Badem</h3>
+            <p class="fiyat2">450 TL / kg</p>
+            <select class="gramaj-secici" onchange="hesapla(this, 380)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>380</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Badem', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Badem')">Çıkar</button>
+        </div>
+
+        <div class="urun-karti" data-kategori="kuruyemis">
+            <img src="images/ceviz.jpg" alt="Ceviz">
+            <h3>Ceviz İçi</h3>
+            <p class="fiyat2">420 TL / kg</p>
+            <select class="gramaj-secici" onchange="hesapla(this, 350)">
+                <option value="0.25">250 gr</option>
+                <option value="0.5">500 gr</option>
+                <option value="1" selected>1 kg</option>
+            </select>
+            <p class="fiyat"><span>350</span> TL</p>
+            <button class="btn-ekle" onclick="sepeteEkle('Ceviz İçi', this)">Sepete Ekle</button>
+            <button class="btn-cikar" onclick="sepettenCikar('Ceviz İçi')">Çıkar</button>
         </div>
     </div>
 
     <div class="sepet-ozeti">
-        <h3>Alışveriş Sepetiniz</h3>
-        <ul id="sepet-listesi">
-            <li>Henüz ürün eklenmedi.</li>
-        </ul>
-        <p><strong>Toplam: <span id="toplam-fiyat">0</span> TL</strong></p>
-        <button onclick="siparisVer()">WhatsApp ile Sipariş Ver</button>
+        <h3>Sepetiniz</h3>
+        <ul id="sepet-listesi"><li>Sepetiniz boş.</li></ul>
+        <div style="text-align: right; padding: 10px;">
+            <h3>Toplam: <span id="toplam-fiyat">0</span> TL</h3>
+        </div>
+        <button onclick="siparisVer()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:5px; font-size:1.1em; cursor:pointer; font-weight:bold;">WhatsApp Sipariş Gönder</button>
     </div>
 </div>
 
 <script>
+    // --- DEĞİŞKENLER ---
     let sepet = [];
     let toplam = 0;
 
-    function sepeteEkle(ad, fiyat) {
-        // Ürünü sepete ekle
-        sepet.push({ urunAdı: ad, urunFiyatı: fiyat });
-        toplam += fiyat;
-        guncelleSepetEkrani();
+    // --- FONKSİYONLAR ---
+
+    // 1. Fiyat Hesaplama
+    function hesapla(liste, kgFiyati) {
+        const miktar = parseFloat(liste.value);
+        const sonuc = Math.round(miktar * kgFiyati);
+        // İlgili kartın içindeki fiyat span'ını bul
+        const fiyatEkrani = liste.closest('.urun-karti').querySelector('.fiyat span');
+        fiyatEkrani.innerText = sonuc;
     }
 
-    function sepettenCikar(ad, fiyat) {
-        // Sepette bu isimde bir ürün var mı kontrol et
-        const index = sepet.findIndex(item => item.urunAdı === ad);
+    // 2. Filtreleme
+    function filtrele(k) {
+        const kartlar = document.querySelectorAll('.urun-karti');
+        kartlar.forEach(kart => {
+            if (k === 'hepsi' || kart.getAttribute('data-kategori') === k) {
+                kart.style.display = 'block';
+            } else {
+                kart.style.display = 'none';
+            }
+        });
+    }
 
+    // 3. Sepete Ekle
+    function sepeteEkle(ad, buton) {
+        const kart = buton.closest('.urun-karti');
+        const gramaj = kart.querySelector('.gramaj-secici').options[kart.querySelector('.gramaj-secici').selectedIndex].text;
+        const fiyat = parseFloat(kart.querySelector('.fiyat span').innerText);
+
+        sepet.push({ urunAdi: ad + " (" + gramaj + ")", urunFiyati: fiyat });
+        toplam += fiyat;
+        guncelle();
+    }
+
+    // 4. Sepetten Çıkar
+    function sepettenCikar(ad) {
+        const index = sepet.findLastIndex(item => item.urunAdi.includes(ad));
         if (index !== -1) {
-            // Eğer ürün bulunduysa sepetten çıkar ve fiyattan düş
-            toplam -= sepet[index].urunFiyatı;
+            toplam -= sepet[index].urunFiyati;
             sepet.splice(index, 1);
-            guncelleSepetEkrani();
+            guncelle();
         } else {
-            alert("Bu ürün zaten sepetinizde yok!");
+            alert("Ürün sepetinizde yok.");
         }
     }
 
-    function guncelleSepetEkrani() {
+    // 5. Sepeti Güncelle (Arayüz)
+    function guncelle() {
         const liste = document.getElementById('sepet-listesi');
         const toplamEtiket = document.getElementById('toplam-fiyat');
         
-        // Eğer HTML'de bu ID'ler yoksa hata vermemesi için kontrol:
-        if(!liste || !toplamEtiket) return;
+        if (sepet.length === 0) {
+            liste.innerHTML = "<li>Sepetiniz boş.</li>";
+            toplamEtiket.innerText = "0";
+            return;
+        }
 
         liste.innerHTML = "";
-        
-        if (sepet.length === 0) {
-            liste.innerHTML = "<li>Henüz ürün eklenmedi.</li>";
-        } else {
-            sepet.forEach((item) => {
-                const li = document.createElement('li');
-                li.textContent = `${item.urunAdı} - ${item.urunFiyatı} TL`;
-                liste.appendChild(li);
-            });
-        }
-        
-        toplamEtiket.textContent = toplam;
+        sepet.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${item.urunAdi}</span> <b>${item.urunFiyati} TL</b>`;
+            liste.appendChild(li);
+        });
+        toplamEtiket.innerText = toplam;
     }
 
+    // 6. WhatsApp Sipariş
     function siparisVer() {
-        if(sepet.length === 0) {
+        if (sepet.length === 0) {
             alert("Sepetiniz boş!");
             return;
         }
-        const mesaj = "MEG KURUYEMİŞ Siparişim: " + sepet.map(i => i.urunAdı).join(", ") + ". Toplam: " + toplam + " TL";
-        window.open(`https://wa.me/905XXXXXXXXX?text=${encodeURIComponent(mesaj)}`);
+        const mesaj = "MEG KURUYEMİŞ SİPARİŞİ:\n" + sepet.map(i => "- " + i.urunAdi + " (" + i.urunFiyati + " TL)").join("\n") + "\n\nTOPLAM: " + toplam + " TL";
+        window.open("https://wa.me/905XXXXXXXXX?text=" + encodeURIComponent(mesaj));
     }
 </script>
-
 </body>
 </html>
