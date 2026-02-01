@@ -1,0 +1,84 @@
+ body { 
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background-color: white; }
+        header { 
+            background-color: darkgreen;
+            color: white;
+            padding: 20px;
+            text-align: center; }
+        
+        .container {
+            width: 100%;
+            margin: auto;
+            padding: 20px;
+            background-color: aqua;
+            text-align: center; 
+            text-transform: uppercase;
+         }
+        
+        .urun-listesi {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+             gap: 20px;
+             }
+        
+        .urun-karti { 
+            background: red;
+             padding: 15px;
+              border-radius: 10px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+             text-align: center; 
+        }
+        
+        .urun-karti img { 
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+             border-radius: 10px; }
+        
+        .urun-karti h3 {
+             color: black;
+             }
+        
+        .fiyat {
+             color: blue;
+              font-weight: bold;
+               font-size: 1.2em;
+             }
+        .fiyat2{
+            color: blue;
+             font-weight: bold;
+              font-size: 0.8em;
+               text-decoration: line-through;
+
+        }
+        button { 
+            background-color: green;
+             color: white;
+              border: none; 
+            padding: 10px 20px;
+             border-radius: 5px;
+              cursor: pointer;
+               margin-top: 10px;
+                transition: 0.5s;
+        }
+        
+        button:hover {
+             background-color: blue;
+             }
+
+        .sepet-ozeti { 
+            background: white;
+             padding: 15px;
+              margin-top: 30px;
+               border: 5px solid darkgreen;
+                list-style: none;
+            }
+        #sepet-listesi{
+            list-style: none;
+        }
+header img{
+    width: 300px;
+    height: 300px;
+}
