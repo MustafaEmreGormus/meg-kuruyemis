@@ -4,31 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEG KURUYEMİŞ | Taptaze Lezzetler</title>
-    <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; padding-bottom: 50px; }
-        header { text-align: center; padding: 20px; background: #fff; border-bottom: 3px solid #2d5a27; }
+        header { text-align: center; padding: 20px; background: aqua; border-bottom: 3px solid #2d5a27; text-transform: uppercase; font-weight: bold; }
         header img { width: 300px; height: auto; }
-        .container { width: 100%; max-width: 2100px; margin: auto; background-color: gold; overflow-x: auto; }
+        /* Yan Panel Temel Yapısı */
+.yan-panel {
+    height: 100%;
+    width: 0; /* Başlangıçta genişlik sıfır */
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    right: 0;
+    background-color: white;
+    overflow-x: hidden;
+    transition: 0.5s; /* Açılma hızı */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+}
+
+.panel-icerik { padding: 30px; width: 300px; }
+
+.kapat-btn { font-size: 30px; cursor: pointer; float: right; }
+
+.input-grubu { margin-top: 20px; text-align: left; }
+.input-grubu label { display: block; font-size: 0.9em; font-weight: bold; color: #666; margin-bottom: 5px; }
+.input-grubu input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+
+/* Buton Tasarımları */
+.akilliara{padding: 12px 20px; border-radius: 25px; background: blue; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.5s;}
+.akilliara:hover{background-color: red;}
+.giris-btn { background: gold; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+.kayit-btn { background: black; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+.facebook-btn { background: darkblue; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .container { width: 100%; max-width: 2100px; margin: auto; background-color: gold; overflow-x: auto; padding-bottom: 20px; }
         
         /* Filtreleme Butonları */
-        .filtre-grubu { text-align: center; margin: 20px 0; }
+        .filtre-grubu { text-align: center; padding: 20px 0; }
         .filtre-btn { 
             padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 20px; 
-            border: 2px solid #2d5a27; background: blue; color: white; font-weight: bold;
+            border: 2px solid #2d5a27; background: blue; color: white; font-weight: bold; transition: 0.5s;
         }
-        .filtre-btn:hover, .btn-aktif { background: #2d5a27; color: white; }
+        .filtre-btn:hover { background: #2d5a27; color: red; }
 
         /* Ürün Izgarası */
         .urun-listesi { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
             gap: 20px; 
+            padding: 0 20px;
         }
 
         .urun-karti { 
             background: red; padding: 20px; border-radius: 10px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; 
+            color: white; /* Kırmızı kart üzerine beyaz yazı */
         }
         .urun-karti img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; }
         
@@ -36,20 +66,80 @@
         .fiyat { color: black; font-weight: bold; font-size: 1.4em; margin: 10px 0; }
         .fiyat2 { text-decoration: line-through; color: black; font-size: 0.9em; }
 
-        .btn-ekle { background: #2d5a27; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 1s; }
-        .btn-cikar { background: #eee; color: #333; border: none; padding: 5px; margin-top: 10px; width: 100%; cursor: pointer; border-radius: 10px; transition: 1s; }
-        .btn-ekle:hover{
-            background-color: aqua;
-        }
-        .btn-cikar:hover{
-            background-color: fuchsia; color: white;
-        }
+        .btn-ekle { background-color: darkgreen; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 1s; }
+        .btn-cikar { background-color: whitesmoke; color: #333; border: none; padding: 5px; margin-top: 10px; width: 100%; cursor: pointer; border-radius: 10px; transition: 1s; font-weight: bold;}
+        
+        .btn-ekle:hover { background-color: aqua; color: black; }
+        .btn-cikar:hover { background-color: fuchsia; color: white; }
+
         /* Sepet Bölümü */
-        .sepet-ozeti { background: #fff; padding: 20px; margin-top: 40px; border-radius: 10px; border-top: 5px solid #2d5a27; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .sepet-ozeti { background-color: white; padding: 20px; margin: 40px 20px 0 20px; border-radius: 10px; border-top: 5px solid #2d5a27; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         #sepet-listesi { list-style: none; padding: 0; }
         #sepet-listesi li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .siparisver{
+            background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:5px; font-size:1.1em; cursor:pointer; font-weight:bold;
+        }
+        .siparisver:hover{
+            background-color: fuchsia;
+        }
+        /* AÇILIR MENÜ (ACCORDION) TASARIMI */
+        .bilgi-alani { margin: 20px; }
+        .accordion {
+            background-color: #2d5a27; color: white; cursor: pointer; padding: 18px;
+            width: 100%; text-align: left; border: none; outline: none; transition: 0.4s;
+            font-size: 1.1em; font-weight: bold; border-radius: 10px; margin-top: 10px;
+        }
+        .active, .accordion:hover { background-color: blue; }
+        .panel {
+            padding: 0 18px; background-color: white; display: none; overflow: hidden;
+            border-radius: 0 0 10px 10px; border: 2px solid darkgreen; border-top: none;
+        }
+        .panel p { padding: 15px 0; color: #333; line-height: 1.6; }
 
-        @media (max-width: 600px) { .urun-listesi { grid-template-columns: 1fr; } }
+      /* MOBİL UYUM AYARLARI (Ekran 768px'den küçükse) */
+@media (max-width: 768px) {
+    header img { width: 200px; } /* Logoyu mobilde biraz küçültüyoruz */
+    
+    .container { padding: 10px; }
+
+    /* Ürünleri mobilde yan yana 2 tane veya alt alta 1 tane gösterir */
+    .urun-listesi { 
+        grid-template-columns: repeat(2, 1fr); /* Yan yana 2 ürün */
+        gap: 10px; 
+        padding: 5px;
+    }
+
+    /* Ürün kartlarındaki yazı boyutlarını mobilde optimize et */
+    .urun-karti { padding: 10px; }
+    .urun-karti h3 { font-size: 1em; }
+    .fiyat { font-size: 1.1em; }
+    
+    /* Arama çubuğunu mobilde tam genişlik yap */
+    #ai-arama { width: 90% !important; margin-bottom: 10px; }
+    
+    /* Yan paneli (Üye girişi) mobilde tam ekran aç */
+    .yan-panel { width: 0; }
+    .panel-icerik { width: 100vw; } /* vw: ekran genişliği */
+
+    /* Sepet özetini mobilde daha okunaklı yap */
+    .sepet-ozeti { margin: 20px 5px; padding: 15px; }
+}
+
+/* Çok küçük ekranlar için (480px altı) */
+@media (max-width: 480px) {
+    .urun-listesi { grid-template-columns: 1fr; } /* Ürünleri tek sütun yap */
+    .filtre-btn { padding: 8px 12px; font-size: 0.8em; }
+}
+.urun-karti img { 
+    max-width: 100%; 
+    height: auto; 
+    aspect-ratio: 1/1; /* Resimleri kare yapar, daha düzenli durur */
+    object-fit: cover; 
+}
+.aiyasor{
+    background: blue; color: white; border-radius: 50px; padding: 15px 25px; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.aiyasor:hover{background-color: purple;}
     </style>
 </head>
 <body>
@@ -58,14 +148,53 @@
     <img src="images/llogo.jpg" alt="MEG Logo">
     <h1>MEG KURUYEMİŞ</h1>
     <p>Doğallığın ve Tazeliğin Adresi</p>
+    
 </header>
+<div style="text-align: right; padding: 10px; background: #fff;">
+    <button onclick="panelAc()" style="background: none; border: none; cursor: pointer; font-size: 1.2em;">
+        👤 Hesabım
+    </button>
+</div>
 
+<div id="yanPanel" class="yan-panel">
+    <div class="panel-icerik">
+        <span class="kapat-btn" onclick="panelKapat()">&times;</span>
+        <h2 style="color: orange; border-bottom: 2px solid gold; padding-bottom: 10px;">ÜYE GİRİŞİ</h2>
+        
+        <div class="input-grubu">
+            <label>Kullanıcı Adı / E-Posta</label>
+            <input type="text" placeholder="E-posta adresinizi giriniz">
+        </div>
+        
+        <div class="input-grubu">
+            <label>Şifre</label>
+            <input type="password" placeholder="Şifrenizi giriniz">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 0.8em; margin: 10px 0;">
+            <label><input type="checkbox"> Beni Hatırla</label>
+            <a href="#" style="color: #666; text-decoration: none;">Şifremi Unuttum</a>
+        </div>
+
+        <button class="giris-btn">GİRİŞ YAP</button>
+        <button class="kayit-btn">KAYIT OL</button>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <button class="facebook-btn">f ile bağlan</button>
+        </div>
+    </div>
+</div>
 <div class="container">
     <div class="filtre-grubu">
         <button class="filtre-btn" onclick="filtrele('hepsi')">Hepsi</button>
         <button class="filtre-btn" onclick="filtrele('kuruyemis')">Kuruyemiş</button>
         <button class="filtre-btn" onclick="filtrele('sekerleme')">Şekerleme</button>
     </div>
+    <div style="text-align: center; margin: 20px;">
+    <input type="text" id="ai-arama" placeholder="AI ile ürün ara (örn: fıstk)..." 
+           style="padding: 12px; width: 60%; border-radius: 25px; border: 2px solid darkgreen; outline: none;">
+    <button class="akilliara" onclick="aiAra()" >🔍 Akıllı Ara</button>
+</div>
 
     <div class="urun-listesi">
         <div class="urun-karti" data-kategori="sekerleme">
@@ -187,27 +316,47 @@
         <div style="text-align: right; padding: 10px;">
             <h3>Toplam: <span id="toplam-fiyat">0</span> TL</h3>
         </div>
-        <button onclick="siparisVer()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:5px; font-size:1.1em; cursor:pointer; font-weight:bold;">WhatsApp Sipariş Gönder</button>
+        <button class ="siparisver" onclick="siparisVer()" >WhatsApp Sipariş Gönder</button>
+    </div>
+
+    <div class="bilgi-alani">
+        <button class="accordion" onclick="toggleAccordion(this)">📜 Hakkımızda</button>
+        <div class="panel">
+            <p><strong>MEG KURUYEMİŞ</strong> olarak 2026 yılından beri en taze ürünleri doğrudan çiftçiden sofranıza ulaştırıyoruz. Hijyen ve kalite bizim için ilk sıradadır. Geleneksel lezzetleri modern teknolojiyle buluşturuyoruz.</p>
+        </div>
+
+        <button class="accordion" onclick="toggleAccordion(this)">📞 İletişim Bilgileri</button>
+        <div class="panel">
+            <p>
+                <strong>Adres:</strong> Lezzet Caddesi, No: 44, İstanbul/Türkiye<br>
+                <strong>Telefon:</strong> 05XX XXX XX XX<br>
+                <strong>E-posta:</strong> iletisim@megkuruyemis.com<br>
+                <strong>Çalışma Saatleri:</strong> Hafta içi 09:00 - 20:00
+            </p>
+        </div>
     </div>
 </div>
 
 <script>
-    // --- DEĞİŞKENLER ---
+    function panelAc() {
+    document.getElementById("yanPanel").style.width = "350px";
+}
+
+function panelKapat() {
+    document.getElementById("yanPanel").style.width = "0";
+}
     let sepet = [];
     let toplam = 0;
 
-    // --- FONKSİYONLAR ---
-
-    // 1. Fiyat Hesaplama
+    // Fiyat Hesaplama
     function hesapla(liste, kgFiyati) {
         const miktar = parseFloat(liste.value);
         const sonuc = Math.round(miktar * kgFiyati);
-        // İlgili kartın içindeki fiyat span'ını bul
         const fiyatEkrani = liste.closest('.urun-karti').querySelector('.fiyat span');
         fiyatEkrani.innerText = sonuc;
     }
 
-    // 2. Filtreleme
+    // Filtreleme
     function filtrele(k) {
         const kartlar = document.querySelectorAll('.urun-karti');
         kartlar.forEach(kart => {
@@ -219,7 +368,7 @@
         });
     }
 
-    // 3. Sepete Ekle
+    // Sepete Ekle
     function sepeteEkle(ad, buton) {
         const kart = buton.closest('.urun-karti');
         const gramaj = kart.querySelector('.gramaj-secici').options[kart.querySelector('.gramaj-secici').selectedIndex].text;
@@ -230,7 +379,7 @@
         guncelle();
     }
 
-    // 4. Sepetten Çıkar
+    // Sepetten Çıkar
     function sepettenCikar(ad) {
         const index = sepet.findLastIndex(item => item.urunAdi.includes(ad));
         if (index !== -1) {
@@ -242,7 +391,7 @@
         }
     }
 
-    // 5. Sepeti Güncelle (Arayüz)
+    // Sepeti Güncelle
     function guncelle() {
         const liste = document.getElementById('sepet-listesi');
         const toplamEtiket = document.getElementById('toplam-fiyat');
@@ -262,7 +411,7 @@
         toplamEtiket.innerText = toplam;
     }
 
-    // 6. WhatsApp Sipariş
+    // WhatsApp Sipariş
     function siparisVer() {
         if (sepet.length === 0) {
             alert("Sepetiniz boş!");
@@ -271,6 +420,78 @@
         const mesaj = "MEG KURUYEMİŞ SİPARİŞİ:\n" + sepet.map(i => "- " + i.urunAdi + " (" + i.urunFiyati + " TL)").join("\n") + "\n\nTOPLAM: " + toplam + " TL";
         window.open("https://wa.me/905XXXXXXXXX?text=" + encodeURIComponent(mesaj));
     }
+
+    // AÇILIR MENÜ FONKSİYONU
+    function toggleAccordion(element) {
+        element.classList.toggle("active");
+        var panel = element.nextElementSibling;
+        if (panel.style.display === "block") {
+            panel.style.display = "none";
+        } else {
+            panel.style.display = "block";
+        }
+    }
+    
 </script>
+<div id="ai-chat" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button class="aiyasor" onclick="aiCevap()">
+        🤖 MEG AI'ya Sor
+    </button>
+</div>
+
+<script>
+function aiCevap() {
+    const soru = prompt("MEG Kuruyemiş AI Asistanı: Size nasıl yardımcı olabilirim?");
+    if (soru) {
+        // Burada gerçek bir AI API'sine (OpenAI gibi) bağlanılabilir
+        // Şimdilik ödev için "Simüle" edilmiş bir AI cevabı veriyoruz:
+        if (soru.includes("taze")) {
+            alert("MEG AI: Ürünlerimiz günlük olarak kavrulmaktadır ve vakumlu paketlerde gönderilir.");
+        } else if (soru.includes("indirim")) {
+            alert("MEG AI: Şu an 1kg Antep Fıstığı alımlarında %10 indirimimiz var!");
+        } else {
+            alert("MEG AI: Harika bir soru! Uzman ekibimiz size en kısa sürede WhatsApp üzerinden dönüş yapacaktır.");
+        }
+    }
+}
+function aiAra() {
+    const aramaTerimi = document.getElementById('ai-arama').value;
+    const urunKartlari = document.querySelectorAll('.urun-karti');
+    
+    // 1. Veri Hazırlama (AI'nın tarayacağı ürün listesini oluşturur)
+    const urunVerileri = [];
+    urunKartlari.forEach((kart, index) => {
+        urunVerileri.push({
+            id: index,
+            ad: kart.querySelector('h3').innerText,
+            kategori: kart.getAttribute('data-kategori')
+        });
+    });
+
+    // 2. AI Ayarları (Hata tolerans eşiği: 0.4 - Ne kadar düşükse o kadar katıdır)
+    const options = {
+        keys: ['ad', 'kategori'],
+        threshold: 0.4 
+    };
+
+    const fuse = new Fuse(urunVerileri, options);
+    const sonuc = fuse.search(aramaTerimi);
+
+    // 3. Ekranda Gösterme
+    if (aramaTerimi === "") {
+        filtrele('hepsi'); // Boşsa her şeyi göster
+        return;
+    }
+
+    // Önce hepsini gizle
+    urunKartlari.forEach(kart => kart.style.display = 'none');
+
+    // Sadece AI'nın bulduklarını göster
+    sonuc.forEach(item => {
+        urunKartlari[item.refIndex].style.display = 'block';
+    });
+}
+</script>
+
 </body>
 </html>
