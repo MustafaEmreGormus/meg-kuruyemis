@@ -13,7 +13,7 @@
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; padding-bottom: 50px; }
         header { text-align: center; padding: 20px; background: aqua; border-bottom: 3px solid #2d5a27; }
         header img { width: 250px; height: auto; }
-        .container { width: 100%; max-width: 1400px; margin: auto; background-color: gold; padding: 20px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 2100px; margin: auto; background-color: gold; padding: 20px; box-sizing: border-box; }
 
         /* YAN PANEL */
         .yan-panel { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: white; overflow-x: hidden; transition: 0.5s; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
@@ -33,18 +33,16 @@
         .urun-listesi { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
         .urun-karti { background: red; padding: 15px; border-radius: 10px; color: white; text-align: center; }
         .urun-karti img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; }
+        .gramaj-secici { margin: 10px 0; padding: 5px; border-radius: 5px; width: 90%; cursor: pointer; }
 
-        /* AI DANIŞMAN (CHAT) */
+        /* AI DANIŞMAN */
         .ai-danisman { background: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; border: 2px dashed blue; }
-
-        /* HAKKIMIZDA */
         footer { background: #333; color: white; padding: 40px 20px; text-align: center; margin-top: 50px; }
 
         @media (max-width: 768px) {
             .urun-listesi { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             #ai-arama { width: 60%; }
         }
-
         .sepet-ozeti { background: white; padding: 20px; margin-top: 30px; border-radius: 10px; color: black; }
     </style>
 </head>
@@ -60,8 +58,7 @@
 </header>
 
 <div id="yanPanel" class="yan-panel">
-    <div class="panel-icerik" id="panelIcerik">
-        </div>
+    <div class="panel-icerik" id="panelIcerik"></div>
 </div>
 
 <div class="container">
@@ -80,27 +77,34 @@
 
     <div class="ai-danisman">
         <h3>🤖 MEG AI Danışman</h3>
-        <p id="ai-cevap">Merhaba! Sana en uygun kuruyemişi seçmemi ister misin? (Örn: "Diyetteyim" veya "Tatlı bir şeyler")</p>
-        <input type="text" id="ai-soru" placeholder="AI'ye sor..." style="width:70%; padding:10px; border-radius:5px; border:1px solid #ccc;">
+        <p id="ai-cevap">Merhaba! Sana yardımcı olabilirim.</p>
+        <input type="text" id="ai-soru" placeholder="AI'ye sor..." style="width:70%; padding:10px;">
         <button onclick="aiDanis()" class="akilliara">Sor</button>
     </div>
 
     <div class="sepet-ozeti">
         <h3>🛒 Sepetiniz</h3>
         <ul id="sepet-listesi"><li>Sepetiniz boş.</li></ul>
-        <h3>Toplam: <span id="toplam-fiyat">0</span> TL</h3>
-        <button onclick="siparisVer()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">WhatsApp Sipariş Onayla</button>
+        
+        <div id="adres-alani" style="margin-top: 15px;">
+            <label for="musteri-adres" style="font-weight: bold; display: block; margin-bottom: 5px;">Teslimat Adresi:</label>
+            <textarea id="musteri-adres" placeholder="Lütfen açık adresinizi buraya yazınız..." 
+                style="width: 100%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit;"></textarea>
+        </div>
+
+        <h3 style="margin-top: 20px;">Toplam: <span id="toplam-fiyat">0</span> TL</h3>
+        <button onclick="whatsappSiparisiGonder()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition: 0.3s;">
+            WhatsApp ile Siparişi Onayla
+        </button>
     </div>
 </div>
 
 <footer>
     <h2>BİZ KİMİZ?</h2>
-    <p>MEG Kuruyemiş olarak 1990'dan beri en taze ürünleri, en doğal haliyle sofralarınıza taşıyoruz. <br> Amacımız, geleneksel lezzetleri modern teknolojiyle birleştirerek size sunmaktır.</p>
     <p>© 2026 MEG Kuruyemiş - Tüm Hakları Saklıdır.</p>
 </footer>
 
 <script>
-    // 1. FIREBASE CONFIG
     const firebaseConfig = {
         apiKey: "AIzaSy...", 
         authDomain: "meg-kuruyemis.firebaseapp.com",
@@ -116,35 +120,47 @@
     let sepet = [];
     let toplam = 0;
 
-    // 2. VERİ ÇEKME (REAL-TIME)
     function urunleriYukle() {
         const urunKutusu = document.getElementById("urun-kutusu");
         db.collection("urunler").onSnapshot((querySnapshot) => {
             urunKutusu.innerHTML = "";
             querySnapshot.forEach((doc) => {
                 const urun = doc.data();
+                const id = doc.id;
                 urunKutusu.innerHTML += `
                     <div class="urun-karti" data-kategori="${urun.kategori}">
                         <img src="${urun.resim || 'images/default.jpg'}" alt="${urun.ad}">
                         <h3>${urun.ad}</h3>
-                        <p style="text-decoration:line-through; font-size:0.8em; color:#ddd;">${urun.eskiFiyat || 0} TL</p>
-                        <p style="font-size:1.3em; font-weight:bold;">${urun.kgFiyat} TL</p>
-                        <button class="btn-ekle" onclick="sepeteEkle('${urun.ad}', ${urun.kgFiyat})">Sepete Ekle</button>
+                        <select id="gramaj-${id}" onchange="fiyatHesapla('${id}', ${urun.kgFiyat})" class="gramaj-secici">
+                            <option value="0.25">250 gr</option>
+                            <option value="0.5">500 gr</option>
+                            <option value="1">1 kg</option>
+                        </select>
+                        <p id="fiyat-gosterge-${id}" style="font-size:1.3em; font-weight:bold;">
+                            ${(urun.kgFiyat * 0.25).toFixed(2)} TL
+                        </p>
+                        <button class="btn-ekle" onclick="sepeteEkleDinamik('${id}', '${urun.ad}')">Sepete Ekle</button>
                     </div>`;
             });
+        }, (err) => {
+            console.error("Firebase Hatası: ", err);
+            urunKutusu.innerHTML = "<p>Veri çekilemedi!</p>";
         });
     }
 
-    // 3. SEPET İŞLEMLERİ (EKLE & ÇIKAR)
-    function sepeteEkle(ad, fiyat) {
-        sepet.push({ad, fiyat});
-        toplam += fiyat;
-        guncelle();
+    function fiyatHesapla(id, kgFiyat) {
+        const oran = document.getElementById(`gramaj-${id}`).value;
+        const sonuc = (kgFiyat * oran).toFixed(2);
+        document.getElementById(`fiyat-gosterge-${id}`).innerText = sonuc + " TL";
     }
 
-    function sepettenCikar(index) {
-        toplam -= sepet[index].fiyat;
-        sepet.splice(index, 1);
+    function sepeteEkleDinamik(id, ad) {
+        const liste = document.getElementById(`gramaj-${id}`);
+        const gramajMetni = liste.options[liste.selectedIndex].text;
+        const anlikFiyat = parseFloat(document.getElementById(`fiyat-gosterge-${id}`).innerText);
+
+        sepet.push({ ad: ad + " (" + gramajMetni + ")", fiyat: anlikFiyat });
+        toplam += anlikFiyat;
         guncelle();
     }
 
@@ -154,53 +170,84 @@
             liste.innerHTML = "<li>Sepetiniz boş.</li>";
         } else {
             liste.innerHTML = sepet.map((i, index) => `
-                <li>${i.ad} - ${i.fiyat} TL 
-                <button class="btn-cikar" onclick="sepettenCikar(${index})">Çıkar</button></li>
-            `).join('');
+                <li>${i.ad} - ${i.fiyat.toFixed(2)} TL 
+                <button class="btn-cikar" onclick="sepettenCikar(${index})">x</button></li>`).join('');
         }
-        document.getElementById('toplam-fiyat').innerText = toplam;
+        document.getElementById('toplam-fiyat').innerText = toplam.toFixed(2);
     }
 
-    // 4. AI DANIŞMAN (Basit Mantık)
-    function aiDanis() {
-        const soru = document.getElementById('ai-soru').value.toLowerCase();
-        let cevap = "";
-        if(soru.includes("diyet")) cevap = "Diyet için Kavrulmuş Fındık ve Çiğ Badem öneririm!";
-        else if(soru.includes("tatlı")) cevap = "Şekerleme kategorimizdeki taze Lokumlar tam size göre!";
-        else if(soru.includes("enerji")) cevap = "Antep Fıstığı ve Kaju harika bir enerji kaynağıdır!";
-        else cevap = "Şu an tüm ürünlerimiz çok taze, özellikle Antep Fıstığını denemelisiniz!";
-        document.getElementById('ai-cevap').innerText = cevap;
+    function sepettenCikar(index) {
+        toplam -= sepet[index].fiyat;
+        sepet.splice(index, 1);
+        guncelle();
     }
 
-    // 5. GİRİŞ & KAYIT PANELLERİ
+    // --- GÜNCELLENEN WHATSAPP SİPARİŞ FONKSİYONU ---
+    function whatsappSiparisiGonder() {
+        const adres = document.getElementById('musteri-adres').value;
+        
+        if (sepet.length === 0) {
+            alert("Sepetiniz boş!");
+            return;
+        }
+        
+        if (!adres || adres.trim().length < 10) {
+            alert("Lütfen geçerli ve açık bir teslimat adresi giriniz.");
+            return;
+        }
+
+        let urunMetni = "";
+        sepet.forEach((urun, index) => {
+            urunMetni += `${index + 1}. ${urun.ad} - ${urun.fiyat.toFixed(2)} TL%0A`;
+        });
+
+        const toplamFiyat = document.getElementById('toplam-fiyat').innerText;
+        
+        // --- BURAYA KENDİ NUMARANIZI YAZIN ---
+        const telNo = "905052464244"; 
+        
+        const mesaj = `*YENİ SİPARİŞ (MEG KURUYEMİŞ)*%0A%0A` +
+                      `*Ürünler:*%0A${urunMetni}%0A` +
+                      `*Toplam Tutar:* ${toplamFiyat} TL%0A%0A` +
+                      `*Teslimat Adresi:*%0A${adres}`;
+
+        const whatsappLink = `https://api.whatsapp.com/send?phone=${telNo}&text=${mesaj}`;
+        window.open(whatsappLink, '_blank');
+    }
+
+    function musteriKaydet() {
+        const ad = document.getElementById('kayit-ad').value;
+        const mail = document.getElementById('kayit-email').value;
+        const sifre = document.getElementById('kayit-sifre').value;
+
+        if(!ad || !mail || !sifre) { alert("Tüm alanları doldurun!"); return; }
+
+        db.collection("musteriler").add({
+            adSoyad: ad, eposta: mail, sifre: sifre, tarih: new Date()
+        }).then(() => {
+            alert("Kayıt Başarılı!");
+            panelKapat();
+        });
+    }
+
     function panelAc(tip) {
         const panel = document.getElementById("panelIcerik");
         if(tip === 'giris') {
-            panel.innerHTML = `
-                <span onclick="panelKapat()" style="cursor:pointer; float:right; font-size:25px;">&times;</span>
-                <h2 style="color:orange;">ÜYE GİRİŞİ</h2>
-                <div class="input-grubu"><input type="text" placeholder="E-posta"></div>
-                <div class="input-grubu"><input type="password" placeholder="Şifre"></div>
-                <button class="giris-btn">GİRİŞ YAP</button>`;
+            panel.innerHTML = `<h3>Giriş</h3><div class="input-grubu"><input type="text" placeholder="E-posta"></div><div class="input-grubu"><input type="password" placeholder="Şifre"></div><button class="giris-btn">GİRİŞ</button>`;
         } else {
-            panel.innerHTML = `
-                <span onclick="panelKapat()" style="cursor:pointer; float:right; font-size:25px;">&times;</span>
-                <h2 style="color:green;">YENİ KAYIT</h2>
-                <div class="input-grubu"><input type="text" placeholder="Ad Soyad"></div>
-                <div class="input-grubu"><input type="email" placeholder="E-posta"></div>
-                <div class="input-grubu"><input type="password" placeholder="Şifre"></div>
-                <button class="giris-btn" style="background:green;">KAYIT OL</button>`;
+            panel.innerHTML = `<h3>Kayıt Ol</h3><div class="input-grubu"><input type="text" id="kayit-ad" placeholder="Ad Soyad"></div><div class="input-grubu"><input type="email" id="kayit-email" placeholder="E-posta"></div><div class="input-grubu"><input type="password" id="kayit-sifre" placeholder="Şifre"></div><button class="giris-btn" onclick="musteriKaydet()" style="background:green;">KAYDET</button>`;
         }
         document.getElementById("yanPanel").style.width = "350px";
     }
 
-    // DİĞER FONKSİYONLAR
     function panelKapat() { document.getElementById("yanPanel").style.width = "0"; }
+
     function filtrele(k) {
         document.querySelectorAll('.urun-karti').forEach(kart => {
             kart.style.display = (k === 'hepsi' || kart.dataset.kategori === k) ? 'block' : 'none';
         });
     }
+
     function aiAra() {
         const terim = document.getElementById('ai-arama').value;
         const kartlar = document.querySelectorAll('.urun-karti');
@@ -211,7 +258,27 @@
         kartlar.forEach((k, i) => k.style.display = sonuc.includes(i) ? 'block' : 'none');
     }
 
+    function aiDanis() {
+        const soru = document.getElementById('ai-soru').value.toLowerCase();
+        let cevap = "Şu an en taze ürünümüz Antep Fıstığı!";
+        if(soru.includes("diyet")) cevap = "Diyet için Çiğ Badem öneririm!";
+        document.getElementById('ai-cevap').innerText = cevap;
+    }
+
     window.onload = urunleriYukle;
+    // Panel dışına tıklandığında kapatma
+window.onclick = function(event) {
+    const panel = document.getElementById("yanPanel");
+    if (event.target == panel) {
+        panelKapat();
+    }
+    document.onkeydown = function(evt) {
+    evt = evt || window.event;
+    if (evt.keyCode == 27) { // 27, ESC tuşunun kodudur
+        panelKapat();
+    }
+}
+}
 </script>
 </body>
 </html>
