@@ -13,7 +13,7 @@
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; padding-bottom: 50px; }
         header { text-align: center; padding: 20px; background: aqua; border-bottom: 3px solid #2d5a27; }
         header img { width: 250px; height: auto; }
-        .container { width: 100%; max-width: 2100px; margin: auto; background-color: gold; padding: 20px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 1400px; margin: auto; background-color: gold; padding: 20px; box-sizing: border-box; }
 
         /* YAN PANEL */
         .yan-panel { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: white; overflow-x: hidden; transition: 0.5s; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
@@ -27,6 +27,7 @@
         .akilliara { padding: 12px 20px; background: blue; color: white; margin-left: 10px; }
         .giris-btn { background: orange; color: white; width: 100%; padding: 15px; margin-top: 15px; }
         .btn-ekle { background-color: darkgreen; color: white; padding: 10px; width: 100%; margin-top: 10px; }
+        .btn-ekle:disabled { background-color: #7f8c8d; cursor: not-allowed; }
         .btn-cikar { background-color: #e74c3c; color: white; padding: 2px 8px; font-size: 12px; margin-left: 10px; border-radius: 5px; }
 
         /* ÜRÜN TASARIMI */
@@ -51,13 +52,14 @@
 <header>
     <img src="images/llogo.jpg" alt="MEG Logo">
     <h1>MEG KURUYEMİŞ</h1>
-    <div style="text-align: right; padding-right: 20px;">
+    <div style="text-align: right; padding-right: 20px;" id="kullanici-alani">
         <button onclick="panelAc('giris')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">👤 Giriş Yap</button> | 
         <button onclick="panelAc('kayit')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">📝 Kayıt Ol</button>
     </div>
 </header>
 
 <div id="yanPanel" class="yan-panel">
+    <div style="text-align: right; padding: 10px;"><button onclick="panelKapat()" style="border:none; background:none; font-size:20px; cursor:pointer;">&times;</button></div>
     <div class="panel-icerik" id="panelIcerik"></div>
 </div>
 
@@ -86,15 +88,15 @@
         <h3>🛒 Sepetiniz</h3>
         <ul id="sepet-listesi"><li>Sepetiniz boş.</li></ul>
         
-        <div id="adres-alani" style="margin-top: 15px;">
+        <div id="adres-alani" style="margin-top: 15px; display: none;">
             <label for="musteri-adres" style="font-weight: bold; display: block; margin-bottom: 5px;">Teslimat Adresi:</label>
             <textarea id="musteri-adres" placeholder="Lütfen açık adresinizi buraya yazınız..." 
                 style="width: 100%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit;"></textarea>
         </div>
 
         <h3 style="margin-top: 20px;">Toplam: <span id="toplam-fiyat">0</span> TL</h3>
-        <button onclick="whatsappSiparisiGonder()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition: 0.3s;">
-            WhatsApp ile Siparişi Onayla
+        <button onclick="stokGuncelleVeGonder()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition: 0.3s;">
+            Siparişi Onayla & WhatsApp'a Geç
         </button>
     </div>
 </div>
@@ -127,10 +129,14 @@
             querySnapshot.forEach((doc) => {
                 const urun = doc.data();
                 const id = doc.id;
+                const stokVarMi = urun.stok > 0;
+                const urunResmi = urun.resim ? urun.resim : `https://via.placeholder.com/300x300?text=${urun.ad}`;
+
                 urunKutusu.innerHTML += `
                     <div class="urun-karti" data-kategori="${urun.kategori}">
-                        <img src="${urun.resim || 'images/default.jpg'}" alt="${urun.ad}">
+                        <img src="${urunResmi}" alt="${urun.ad}">
                         <h3>${urun.ad}</h3>
+                        <p style="font-size:0.9em;">Stok: ${urun.stok || 0} Adet</p>
                         <select id="gramaj-${id}" onchange="fiyatHesapla('${id}', ${urun.kgFiyat})" class="gramaj-secici">
                             <option value="0.25">250 gr</option>
                             <option value="0.5">500 gr</option>
@@ -139,12 +145,11 @@
                         <p id="fiyat-gosterge-${id}" style="font-size:1.3em; font-weight:bold;">
                             ${(urun.kgFiyat * 0.25).toFixed(2)} TL
                         </p>
-                        <button class="btn-ekle" onclick="sepeteEkleDinamik('${id}', '${urun.ad}')">Sepete Ekle</button>
+                        <button class="btn-ekle" ${stokVarMi ? '' : 'disabled'} onclick="sepeteEkleDinamik('${id}', '${urun.ad}')">
+                            ${stokVarMi ? 'Sepete Ekle' : 'Stokta Yok'}
+                        </button>
                     </div>`;
             });
-        }, (err) => {
-            console.error("Firebase Hatası: ", err);
-            urunKutusu.innerHTML = "<p>Veri çekilemedi!</p>";
         });
     }
 
@@ -159,16 +164,20 @@
         const gramajMetni = liste.options[liste.selectedIndex].text;
         const anlikFiyat = parseFloat(document.getElementById(`fiyat-gosterge-${id}`).innerText);
 
-        sepet.push({ ad: ad + " (" + gramajMetni + ")", fiyat: anlikFiyat });
+        sepet.push({ id: id, ad: ad + " (" + gramajMetni + ")", fiyat: anlikFiyat, miktar: 1 });
         toplam += anlikFiyat;
         guncelle();
     }
 
     function guncelle() {
         const liste = document.getElementById('sepet-listesi');
+        const adresAlani = document.getElementById('adres-alani');
+        
         if(sepet.length === 0) {
             liste.innerHTML = "<li>Sepetiniz boş.</li>";
+            adresAlani.style.display = "none";
         } else {
+            adresAlani.style.display = "block";
             liste.innerHTML = sepet.map((i, index) => `
                 <li>${i.ad} - ${i.fiyat.toFixed(2)} TL 
                 <button class="btn-cikar" onclick="sepettenCikar(${index})">x</button></li>`).join('');
@@ -182,37 +191,102 @@
         guncelle();
     }
 
-    // --- GÜNCELLENEN WHATSAPP SİPARİŞ FONKSİYONU ---
-    function whatsappSiparisiGonder() {
+    async function stokGuncelleVeGonder() {
         const adres = document.getElementById('musteri-adres').value;
-        
-        if (sepet.length === 0) {
-            alert("Sepetiniz boş!");
-            return;
-        }
-        
-        if (!adres || adres.trim().length < 10) {
-            alert("Lütfen geçerli ve açık bir teslimat adresi giriniz.");
-            return;
-        }
+        if (sepet.length === 0) { alert("Sepetiniz boş!"); return; }
+        if (!adres || adres.trim().length < 10) { alert("Lütfen geçerli bir adres giriniz."); return; }
 
+        try {
+            for (let urun of sepet) {
+                const urunRef = db.collection("urunler").doc(urun.id);
+                await db.runTransaction(async (transaction) => {
+                    const sfDoc = await transaction.get(urunRef);
+                    if (!sfDoc.exists) throw "Ürün sistemde bulunamadı!";
+                    const yeniStok = sfDoc.data().stok - urun.miktar;
+                    if (yeniStok < 0) throw urun.ad + " için stok yetersiz!";
+                    transaction.update(urunRef, { stok: yeniStok });
+                });
+            }
+            whatsappSiparisiGonder(adres);
+        } catch (error) {
+            alert("Hata oluştu: " + error);
+        }
+    }
+
+    function whatsappSiparisiGonder(adres) {
         let urunMetni = "";
         sepet.forEach((urun, index) => {
             urunMetni += `${index + 1}. ${urun.ad} - ${urun.fiyat.toFixed(2)} TL%0A`;
         });
-
         const toplamFiyat = document.getElementById('toplam-fiyat').innerText;
-        
-        // --- BURAYA KENDİ NUMARANIZI YAZIN ---
         const telNo = "905052464244"; 
-        
-        const mesaj = `*YENİ SİPARİŞ (MEG KURUYEMİŞ)*%0A%0A` +
-                      `*Ürünler:*%0A${urunMetni}%0A` +
-                      `*Toplam Tutar:* ${toplamFiyat} TL%0A%0A` +
-                      `*Teslimat Adresi:*%0A${adres}`;
+        const mesaj = `*YENİ SİPARİŞ (MEG KURUYEMİŞ)*%0A%0A*Ürünler:*%0A${urunMetni}%0A*Toplam Tutar:* ${toplamFiyat} TL%0A%0A*Teslimat Adresi:*%0A${adres}`;
+        window.open(`https://api.whatsapp.com/send?phone=${telNo}&text=${mesaj}`, '_blank');
+        sepet = []; toplam = 0; guncelle();
+    }
 
-        const whatsappLink = `https://api.whatsapp.com/send?phone=${telNo}&text=${mesaj}`;
-        window.open(whatsappLink, '_blank');
+    // --- GİRİŞ, KAYIT VE ÇIKIŞ FONKSİYONLARI ---
+
+    function panelAc(tip) {
+        const panel = document.getElementById("panelIcerik");
+        if(tip === 'giris') {
+            panel.innerHTML = `
+                <h3>Giriş</h3>
+                <div class="input-grubu">
+                    <input type="text" id="giris-email" placeholder="E-posta">
+                </div>
+                <div class="input-grubu">
+                    <input type="password" id="giris-sifre" placeholder="Şifre">
+                </div>
+                <button class="giris-btn" onclick="sistemeGirisYap()">GİRİŞ</button>`;
+        } else {
+            panel.innerHTML = `
+                <h3>Kayıt Ol</h3>
+                <div class="input-grubu"><input type="text" id="kayit-ad" placeholder="Ad Soyad"></div>
+                <div class="input-grubu"><input type="email" id="kayit-email" placeholder="E-posta"></div>
+                <div class="input-grubu"><input type="password" id="kayit-sifre" placeholder="Şifre"></div>
+                <button class="giris-btn" onclick="musteriKaydet()" style="background:green;">KAYDET</button>`;
+        }
+        document.getElementById("yanPanel").style.width = "350px";
+    }
+
+    function sistemeGirisYap() {
+        const email = document.getElementById('giris-email').value;
+        const sifre = document.getElementById('giris-sifre').value;
+
+        if (!email || !sifre) { alert("Lütfen tüm alanları doldurun!"); return; }
+
+        db.collection("musteriler")
+            .where("eposta", "==", email)
+            .where("sifre", "==", sifre)
+            .get()
+            .then((querySnapshot) => {
+                if (!querySnapshot.empty) {
+                    const kullanici = querySnapshot.docs[0].data();
+                    alert("Hoş geldiniz, " + kullanici.adSoyad);
+                    
+                    // Giriş yapınca header'ı güncelle ve Çıkış butonunu ekle
+                    document.getElementById('kullanici-alani').innerHTML = `
+                        <span>👤 Merhaba, <b>${kullanici.adSoyad}</b></span> | 
+                        <button onclick="cikisYap()" style="background:none; border:none; cursor:pointer; color:red; font-weight:bold;">Çıkış Yap</button>
+                    `;
+                    panelKapat();
+                } else {
+                    alert("Hatalı e-posta veya şifre!");
+                }
+            })
+            .catch((error) => { console.error("Giriş hatası: ", error); });
+    }
+
+    function cikisYap() {
+        if(confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+            // Header'ı eski haline getir
+            document.getElementById('kullanici-alani').innerHTML = `
+                <button onclick="panelAc('giris')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">👤 Giriş Yap</button> | 
+                <button onclick="panelAc('kayit')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">📝 Kayıt Ol</button>
+            `;
+            alert("Başarıyla çıkış yapıldı.");
+        }
     }
 
     function musteriKaydet() {
@@ -225,23 +299,13 @@
         db.collection("musteriler").add({
             adSoyad: ad, eposta: mail, sifre: sifre, tarih: new Date()
         }).then(() => {
-            alert("Kayıt Başarılı!");
-            panelKapat();
+            alert("Kayıt Başarılı! Artık giriş yapabilirsiniz.");
+            panelAc('giris');
         });
     }
 
-    function panelAc(tip) {
-        const panel = document.getElementById("panelIcerik");
-        if(tip === 'giris') {
-            panel.innerHTML = `<h3>Giriş</h3><div class="input-grubu"><input type="text" placeholder="E-posta"></div><div class="input-grubu"><input type="password" placeholder="Şifre"></div><button class="giris-btn">GİRİŞ</button>`;
-        } else {
-            panel.innerHTML = `<h3>Kayıt Ol</h3><div class="input-grubu"><input type="text" id="kayit-ad" placeholder="Ad Soyad"></div><div class="input-grubu"><input type="email" id="kayit-email" placeholder="E-posta"></div><div class="input-grubu"><input type="password" id="kayit-sifre" placeholder="Şifre"></div><button class="giris-btn" onclick="musteriKaydet()" style="background:green;">KAYDET</button>`;
-        }
-        document.getElementById("yanPanel").style.width = "350px";
-    }
-
     function panelKapat() { document.getElementById("yanPanel").style.width = "0"; }
-
+    
     function filtrele(k) {
         document.querySelectorAll('.urun-karti').forEach(kart => {
             kart.style.display = (k === 'hepsi' || kart.dataset.kategori === k) ? 'block' : 'none';
@@ -266,19 +330,6 @@
     }
 
     window.onload = urunleriYukle;
-    // Panel dışına tıklandığında kapatma
-window.onclick = function(event) {
-    const panel = document.getElementById("yanPanel");
-    if (event.target == panel) {
-        panelKapat();
-    }
-    document.onkeydown = function(evt) {
-    evt = evt || window.event;
-    if (evt.keyCode == 27) { // 27, ESC tuşunun kodudur
-        panelKapat();
-    }
-}
-}
 </script>
 </body>
 </html>
