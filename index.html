@@ -10,25 +10,30 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; padding-bottom: 50px; }
-        header { text-align: center; padding: 20px; background: aqua; border-bottom: 3px solid #2d5a27; }
+        
+        .aiarama{padding:12px; width:50%; border-radius:25px; border:2px solid green;}
+        .aiarama:hover{background-color: red; color: black;}
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: white; padding-bottom: 50px; }
+        header { text-align: center; padding: 20px; background: aqua; border-bottom: 3px solid darkcyan }
         header img { width: 250px; height: auto; }
-        .container { width: 100%; max-width: 1400px; margin: auto; background-color: gold; padding: 20px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 2100px; margin: auto; background-color: gold; padding: 20px; box-sizing: border-box; }
 
         /* YAN PANEL */
         .yan-panel { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: white; overflow-x: hidden; transition: 0.5s; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
         .panel-icerik { padding: 30px; width: 300px; }
         .input-grubu { margin-top: 15px; }
-        .input-grubu input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .input-grubu input { width: 100%; padding: 12px; border: 1px solid grey; border-radius: 8px; box-sizing: border-box; }
         
         /* BUTONLAR */
         .filtre-btn, .akilliara, .giris-btn, .btn-ekle, .btn-cikar { cursor: pointer; border: none; font-weight: bold; transition: 0.3s; border-radius: 20px; }
         .filtre-btn { padding: 10px 20px; margin: 5px; background: blue; color: white; }
-        .akilliara { padding: 12px 20px; background: blue; color: white; margin-left: 10px; }
+        .akilliara { padding: 12px 20px; background: blue; color: white; margin-left: 10px;  }
         .giris-btn { background: orange; color: white; width: 100%; padding: 15px; margin-top: 15px; }
         .btn-ekle { background-color: darkgreen; color: white; padding: 10px; width: 100%; margin-top: 10px; }
-        .btn-ekle:disabled { background-color: #7f8c8d; cursor: not-allowed; }
-        .btn-cikar { background-color: #e74c3c; color: white; padding: 2px 8px; font-size: 12px; margin-left: 10px; border-radius: 5px; }
+        .btn-ekle:hover { background-color: fuchsia; color: black; }
+        .btn-cikar { background-color: orangered; color: white; padding: 2px 8px; font-size: 12px; margin-left: 10px; border-radius: 5px; }
+        .siponayla{background:green; color:white; padding:15px; width:100%; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition: 0.3s;}
+        .siponayla:hover{background-color: blue;}
 
         /* ÜRÜN TASARIMI */
         .urun-listesi { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
@@ -37,10 +42,13 @@
         .gramaj-secici { margin: 10px 0; padding: 5px; border-radius: 5px; width: 90%; cursor: pointer; }
 
         /* AI DANIŞMAN */
-        .ai-danisman { background: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; border: 2px dashed blue; }
-        footer { background: #333; color: white; padding: 40px 20px; text-align: center; margin-top: 50px; }
+        .ai-danisman { background: white; padding: 20px; border-radius: 10px; margin-top: 20px; border: 2px dashed blue; }
+        footer { background: black; color: white; padding: 40px 20px; text-align: center; margin-top: 50px; }
 
-        @media (max-width: 768px) {
+        /* SİPARİŞ KARTLARI */
+        .siparis-kart { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 8px; background: white; color: black; }
+
+        @media (max-width: 800px) {
             .urun-listesi { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             #ai-arama { width: 60%; }
         }
@@ -69,7 +77,7 @@
         <button class="filtre-btn" onclick="filtrele('kuruyemis')">Kuruyemiş</button>
         <button class="filtre-btn" onclick="filtrele('sekerleme')">Şekerleme</button>
         <br><br>
-        <input type="text" id="ai-arama" placeholder="AI ile ürün ara..." style="padding:12px; width:50%; border-radius:25px; border:2px solid green;">
+        <input type="text" class="ai-arama" placeholder="AI ile ürün ara..." >
         <button class="akilliara" onclick="aiAra()">🔍 Akıllı Ara</button>
     </div>
 
@@ -91,11 +99,11 @@
         <div id="adres-alani" style="margin-top: 15px; display: none;">
             <label for="musteri-adres" style="font-weight: bold; display: block; margin-bottom: 5px;">Teslimat Adresi:</label>
             <textarea id="musteri-adres" placeholder="Lütfen açık adresinizi buraya yazınız..." 
-                style="width: 100%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit;"></textarea>
+                style="width: 100%; height: 80px; padding: 10px; border-radius: 8px; border: 1px solid gray; box-sizing: border-box; font-family: inherit;"></textarea>
         </div>
 
         <h3 style="margin-top: 20px;">Toplam: <span id="toplam-fiyat">0</span> TL</h3>
-        <button onclick="stokGuncelleVeGonder()" style="background:#27ae60; color:white; padding:15px; width:100%; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition: 0.3s;">
+        <button onclick="stokGuncelleVeGonder()" class="siponayla">
             Siparişi Onayla & WhatsApp'a Geç
         </button>
     </div>
@@ -121,6 +129,7 @@
 
     let sepet = [];
     let toplam = 0;
+    let aktifKullanici = null;
 
     function urunleriYukle() {
         const urunKutusu = document.getElementById("urun-kutusu");
@@ -197,16 +206,27 @@
         if (!adres || adres.trim().length < 10) { alert("Lütfen geçerli bir adres giriniz."); return; }
 
         try {
+            // İADE TAKİBİ İÇİN: Sipariş verileri
+            const siparisVerileri = {
+                tarih: new Date(),
+                urunler: sepet,
+                toplamTutar: toplam,
+                adres: adres,
+                durum: "tamamlandi",
+                musteriEposta: aktifKullanici ? aktifKullanici.eposta : "misafir"
+            };
+
             for (let urun of sepet) {
                 const urunRef = db.collection("urunler").doc(urun.id);
                 await db.runTransaction(async (transaction) => {
                     const sfDoc = await transaction.get(urunRef);
-                    if (!sfDoc.exists) throw "Ürün sistemde bulunamadı!";
                     const yeniStok = sfDoc.data().stok - urun.miktar;
                     if (yeniStok < 0) throw urun.ad + " için stok yetersiz!";
                     transaction.update(urunRef, { stok: yeniStok });
                 });
             }
+
+            await db.collection("siparisler").add(siparisVerileri);
             whatsappSiparisiGonder(adres);
         } catch (error) {
             alert("Hata oluştu: " + error);
@@ -225,20 +245,24 @@
         sepet = []; toplam = 0; guncelle();
     }
 
-    // --- GİRİŞ, KAYIT VE ÇIKIŞ FONKSİYONLARI ---
+    // --- PROFİL VE SİPARİŞ GEÇMİŞİ ---
 
     function panelAc(tip) {
         const panel = document.getElementById("panelIcerik");
         if(tip === 'giris') {
             panel.innerHTML = `
                 <h3>Giriş</h3>
-                <div class="input-grubu">
-                    <input type="text" id="giris-email" placeholder="E-posta">
-                </div>
-                <div class="input-grubu">
-                    <input type="password" id="giris-sifre" placeholder="Şifre">
-                </div>
+                <div class="input-grubu"><input type="text" id="giris-email" placeholder="E-posta"></div>
+                <div class="input-grubu"><input type="password" id="giris-sifre" placeholder="Şifre"></div>
                 <button class="giris-btn" onclick="sistemeGirisYap()">GİRİŞ</button>`;
+        } else if (tip === 'profil') {
+            panel.innerHTML = `
+                <h3>Hoş geldin, ${aktifKullanici.adSoyad}</h3>
+                <hr>
+                <h4>Sipariş Geçmişim</h4>
+                <div id="siparis-listesi">Yükleniyor...</div>
+                <button class="giris-btn" onclick="cikisYap()" style="background:red;">ÇIKIŞ YAP</button>`;
+            siparisleriYukle();
         } else {
             panel.innerHTML = `
                 <h3>Kayıt Ol</h3>
@@ -254,58 +278,80 @@
         const email = document.getElementById('giris-email').value;
         const sifre = document.getElementById('giris-sifre').value;
 
-        if (!email || !sifre) { alert("Lütfen tüm alanları doldurun!"); return; }
-
         db.collection("musteriler")
             .where("eposta", "==", email)
             .where("sifre", "==", sifre)
             .get()
             .then((querySnapshot) => {
                 if (!querySnapshot.empty) {
-                    const kullanici = querySnapshot.docs[0].data();
-                    alert("Hoş geldiniz, " + kullanici.adSoyad);
-                    
-                    // Giriş yapınca header'ı güncelle ve Çıkış butonunu ekle
+                    aktifKullanici = querySnapshot.docs[0].data();
+                    alert("Giriş Başarılı!");
                     document.getElementById('kullanici-alani').innerHTML = `
-                        <span>👤 Merhaba, <b>${kullanici.adSoyad}</b></span> | 
-                        <button onclick="cikisYap()" style="background:none; border:none; cursor:pointer; color:red; font-weight:bold;">Çıkış Yap</button>
-                    `;
+                        <button onclick="panelAc('profil')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">👤 Profilim</button>`;
                     panelKapat();
                 } else {
-                    alert("Hatalı e-posta veya şifre!");
+                    alert("Hatalı bilgiler!");
                 }
-            })
-            .catch((error) => { console.error("Giriş hatası: ", error); });
+            });
+    }
+
+    function siparisleriYukle() {
+        const listeDiv = document.getElementById("siparis-listesi");
+        db.collection("siparisler")
+            .where("musteriEposta", "==", aktifKullanici.eposta)
+            .get()
+            .then((querySnapshot) => {
+                listeDiv.innerHTML = "";
+                if(querySnapshot.empty) { listeDiv.innerHTML = "Sipariş bulunamadı."; return; }
+                querySnapshot.forEach((doc) => {
+                    const s = doc.data();
+                    const id = doc.id;
+                    const tarih = s.tarih.toDate().toLocaleDateString();
+                    listeDiv.innerHTML += `
+                        <div class="siparis-kart">
+                            <b>Tarih:</b> ${tarih} <br>
+                            <b>Tutar:</b> ${s.toplamTutar} TL <br>
+                            <b>Durum:</b> ${s.durum} <br>
+                            ${s.durum === 'tamamlandi' ? `<button onclick="urunIadeEt('${id}', '${s.urunler[0].id}', 1)" style="margin-top:5px; background:orange; color:white; border:none; padding:5px; border-radius:5px; cursor:pointer;">İade Et</button>` : ''}
+                        </div>`;
+                });
+            });
+    }
+
+    async function urunIadeEt(siparisId, urunId, miktar) {
+        if (!confirm("Ürünü iade edip stoğa eklemek istiyor musunuz?")) return;
+        try {
+            const urunRef = db.collection("urunler").doc(urunId);
+            const siparisRef = db.collection("siparisler").doc(siparisId);
+
+            await db.runTransaction(async (transaction) => {
+                const urunDoc = await transaction.get(urunRef);
+                const yeniStok = urunDoc.data().stok + miktar; // Stoğu geri ekle
+                transaction.update(urunRef, { stok: yeniStok });
+                transaction.update(siparisRef, { durum: "iade_edildi" });
+            });
+            alert("İade başarılı!");
+            siparisleriYukle();
+        } catch (e) { alert("Hata: " + e); }
     }
 
     function cikisYap() {
-        if(confirm("Çıkış yapmak istediğinize emin misiniz?")) {
-            // Header'ı eski haline getir
-            document.getElementById('kullanici-alani').innerHTML = `
-                <button onclick="panelAc('giris')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">👤 Giriş Yap</button> | 
-                <button onclick="panelAc('kayit')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">📝 Kayıt Ol</button>
-            `;
-            alert("Başarıyla çıkış yapıldı.");
-        }
+        aktifKullanici = null;
+        document.getElementById('kullanici-alani').innerHTML = `
+            <button onclick="panelAc('giris')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">👤 Giriş Yap</button> | 
+            <button onclick="panelAc('kayit')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">📝 Kayıt Ol</button>`;
+        panelKapat();
     }
 
     function musteriKaydet() {
         const ad = document.getElementById('kayit-ad').value;
         const mail = document.getElementById('kayit-email').value;
         const sifre = document.getElementById('kayit-sifre').value;
-
-        if(!ad || !mail || !sifre) { alert("Tüm alanları doldurun!"); return; }
-
-        db.collection("musteriler").add({
-            adSoyad: ad, eposta: mail, sifre: sifre, tarih: new Date()
-        }).then(() => {
-            alert("Kayıt Başarılı! Artık giriş yapabilirsiniz.");
-            panelAc('giris');
-        });
+        db.collection("musteriler").add({ adSoyad: ad, eposta: mail, sifre: sifre, tarih: new Date() })
+            .then(() => { alert("Kayıt Başarılı!"); panelAc('giris'); });
     }
 
     function panelKapat() { document.getElementById("yanPanel").style.width = "0"; }
-    
     function filtrele(k) {
         document.querySelectorAll('.urun-karti').forEach(kart => {
             kart.style.display = (k === 'hepsi' || kart.dataset.kategori === k) ? 'block' : 'none';
