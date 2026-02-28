@@ -27,6 +27,7 @@
         /* BUTONLAR */
         .filtre-btn, .akilliara, .giris-btn, .btn-ekle, .btn-cikar { cursor: pointer; border: none; font-weight: bold; transition: 0.3s; border-radius: 20px; }
         .filtre-btn { padding: 10px 20px; margin: 5px; background: blue; color: white; }
+        .filtre-btn:hover{background:aqua; color:black;}
         .akilliara { padding: 12px 20px; background: blue; color: white; margin-left: 10px;  }
         .giris-btn { background: orange; color: white; width: 100%; padding: 15px; margin-top: 15px; }
         .btn-ekle { background-color: darkgreen; color: white; padding: 10px; width: 100%; margin-top: 10px; }
@@ -58,7 +59,7 @@
 <body>
 
 <header>
-    <img src="images/llogo.jpg" alt="MEG Logo">
+    <img src="logo.jpg" alt="MEG Logo">
     <h1>MEG KURUYEMİŞ</h1>
     <div style="text-align: right; padding-right: 20px;" id="kullanici-alani">
         <button onclick="panelAc('giris')" style="background:none; border:none; cursor:pointer; font-size:1.1em;">👤 Giriş Yap</button> | 
@@ -378,4 +379,5 @@
     window.onload = urunleriYukle;
 </script>
 </body>
+
 </html>
